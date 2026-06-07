@@ -1,16 +1,35 @@
-# React + Vite
+# Skyfalke Internal Knowledge Base
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+A private, internal knowledge base dashboard for storing and managing company SOPs and documentation.
 
-Currently, two official plugins are available:
+## Features
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Oxc](https://oxc.rs)
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/)
+- **Documents** — Create, read, update and delete documents with a full markdown editor
+- **Categories** — Organise documents into colour-coded categories
+- **Tags** — Label documents with multiple tags for easy filtering
+- **Search** — Full-text search across titles, content, categories and tags with highlighted results
+- **File Attachments** — Attach and download files (PDFs, images, docs) stored in Firebase Storage
+- **Authentication** — Protected by Firebase Auth — only authorised users can access
 
-## React Compiler
+## Tech Stack
 
-The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
+- React 19 + Vite
+- Tailwind CSS
+- Firebase Firestore (database)
+- Firebase Auth (authentication)
+- Firebase Storage (file attachments)
+- React Router v6
+- @uiw/react-md-editor (markdown editor)
+- react-markdown + remark-gfm (markdown renderer)
 
-## Expanding the ESLint configuration
+** FIREBASE CONFIG ** - INSIDE firebase.json , .env file
 
-If you are developing a production application, we recommend using TypeScript with type-aware lint rules enabled. Check out the [TS template](https://github.com/vitejs/vite/tree/main/packages/create-vite/template-react-ts) for information on how to integrate TypeScript and [`typescript-eslint`](https://typescript-eslint.io) in your project.
+## Deployment
+
+Deployed on Netlify. Connect the GitHub repository and add the environment variables in the Vercel dashboard.
+
+## Firebase Setup
+
+- **Firestore** — enabled in test mode (europe-west1)
+- **Authentication** — Email/Password enabled
+- **Storage** — enabled in test mode
