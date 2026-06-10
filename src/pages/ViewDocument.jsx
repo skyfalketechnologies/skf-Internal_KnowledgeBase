@@ -3,12 +3,14 @@ import { doc, getDoc, deleteDoc } from 'firebase/firestore'
 import { db } from '../firebase'
 import { useNavigate, useParams, Link } from 'react-router-dom'
 import MarkdownRenderer from '../components/MarkdownRenderer'
+import { useAuth } from '../context/AuthContext'
 
 export default function ViewDocument() {
   const { id } = useParams()
   const navigate = useNavigate()
   const [document, setDocument] = useState(null)
   const [loading, setLoading] = useState(true)
+  const { isAdmin } = useAuth()
 
   useEffect(() => {
     const fetchDoc = async () => {
@@ -49,10 +51,12 @@ export default function ViewDocument() {
       <div className="mb-6">
         <div className="flex items-start justify-between gap-4">
           <h1 className="text-white text-2xl font-bold leading-tight">{document.title}</h1>
-          <div className="flex gap-3 shrink-0">
-            <Link to={`/edit/${id}`} className="text-sm bg-neutral-800 text-white px-3 py-1.5 rounded hover:bg-neutral-700 transition-colors">Edit</Link>
-            <button onClick={handleDelete} className="text-sm text-neutral-500 hover:text-red-400 transition-colors px-2 py-1.5">Delete</button>
-          </div>
+          {isAdmin && (
+            <div className="flex gap-3 shrink-0">
+              <Link to={`/edit/${id}`} className="text-sm bg-neutral-800 text-white px-3 py-1.5 rounded hover:bg-neutral-700 transition-colors">Edit</Link>
+              <button onClick={handleDelete} className="text-sm text-neutral-500 hover:text-red-400 transition-colors px-2 py-1.5">Delete</button>
+            </div>
+          )}
         </div>
         <div className="flex flex-wrap items-center gap-3 mt-3">
           {document.category && (

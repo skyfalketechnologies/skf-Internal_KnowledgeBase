@@ -2,12 +2,14 @@ import { useEffect, useState } from 'react'
 import { collection, onSnapshot, deleteDoc, doc } from 'firebase/firestore'
 import { db } from '../firebase'
 import { Link, useSearchParams } from 'react-router-dom'
+import { useAuth } from '../context/AuthContext'
 
 export default function Documents() {
   const [docs, setDocs] = useState([])
   const [categories, setCategories] = useState([])
   const [searchParams, setSearchParams] = useSearchParams()
   const activeCategory = searchParams.get('category') || 'All'
+  const { isAdmin } = useAuth()
 
   useEffect(() => {
     const unsub1 = onSnapshot(collection(db, 'documents'), snap => {
@@ -33,9 +35,11 @@ export default function Documents() {
           <h1 className="text-white text-2xl font-bold">Documents</h1>
           <p className="text-neutral-500 text-sm mt-1">{filtered.length} document{filtered.length !== 1 ? 's' : ''}</p>
         </div>
-        <Link to="/new" className="bg-white text-black text-sm font-semibold px-4 py-2 rounded hover:bg-neutral-200 transition-colors">
-          + New Document
-        </Link>
+        {isAdmin && (
+          <Link to="/new" className="bg-white text-black text-sm font-semibold px-4 py-2 rounded hover:bg-neutral-200 transition-colors">
+            + New Document
+          </Link>
+        )}
       </div>
 
       <div className="flex gap-2 flex-wrap mb-6">
@@ -57,7 +61,7 @@ export default function Documents() {
       {filtered.length === 0 ? (
         <div className="border border-dashed border-neutral-700 rounded p-12 text-center">
           <p className="text-neutral-500 text-sm mb-3">No documents in this category.</p>
-          <Link to="/new" className="text-white text-sm font-medium hover:underline">Create one →</Link>
+          {isAdmin && <Link to="/new" className="text-white text-sm font-medium hover:underline">Create one →</Link>}
         </div>
       ) : (
         <div className="grid md:grid-cols-2 gap-3">
@@ -70,10 +74,12 @@ export default function Documents() {
                   </Link>
                   <p className="text-neutral-500 text-xs mt-1">{doc.category || 'Uncategorised'}</p>
                 </div>
-                <div className="flex gap-3 shrink-0">
-                  <Link to={`/edit/${doc.id}`} className="text-neutral-500 text-xs hover:text-white transition-colors">Edit</Link>
-                  <button onClick={() => handleDelete(doc.id)} className="text-neutral-500 text-xs hover:text-red-400 transition-colors">Delete</button>
-                </div>
+                {isAdmin && (
+                  <div className="flex gap-3 shrink-0">
+                    <Link to={`/edit/${doc.id}`} className="text-neutral-500 text-xs hover:text-white transition-colors">Edit</Link>
+                    <button onClick={() => handleDelete(doc.id)} className="text-neutral-500 text-xs hover:text-red-400 transition-colors">Delete</button>
+                  </div>
+                )}
               </div>
               <p className="text-neutral-600 text-xs mt-2 leading-relaxed" style={{display:'-webkit-box', WebkitLineClamp:2, WebkitBoxOrient:'vertical', overflow:'hidden'}}>
                 {doc.content?.replace(/[#*`>-]/g, '').slice(0, 120)}...

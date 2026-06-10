@@ -4,16 +4,8 @@ import { signOut } from 'firebase/auth'
 import { auth } from '../firebase'
 import { useAuth } from '../context/AuthContext'
 
-const nav = [
-  { to: '/',           label: 'Home',       icon: '⊞' },
-  { to: '/documents',  label: 'Documents',  icon: '≡' },
-  { to: '/new',        label: 'New Doc',    icon: '+' },
-  { to: '/search',     label: 'Search',     icon: '⌕' },
-  { to: '/categories', label: 'Categories', icon: '◈' },
-]
-
 export default function Layout({ children }) {
-  const { user } = useAuth()
+  const { user, isAdmin, role } = useAuth()
   const navigate = useNavigate()
   const [sidebarOpen, setSidebarOpen] = useState(false)
 
@@ -21,6 +13,14 @@ export default function Layout({ children }) {
     await signOut(auth)
     navigate('/login')
   }
+
+  const nav = [
+    { to: '/',           label: 'Home',       icon: '⊞', show: true },
+    { to: '/documents',  label: 'Documents',  icon: '≡', show: true },
+    { to: '/new',        label: 'New Doc',    icon: '+', show: isAdmin },
+    { to: '/search',     label: 'Search',     icon: '⌕', show: true },
+    { to: '/categories', label: 'Categories', icon: '◈', show: isAdmin },
+  ].filter(n => n.show)
 
   const linkClass = ({ isActive }) =>
     `flex items-center gap-3 px-4 py-2.5 rounded text-sm font-medium transition-colors ${
@@ -57,7 +57,8 @@ export default function Layout({ children }) {
         </nav>
 
         <div className="px-4 py-4 border-t border-neutral-800">
-          <p className="text-neutral-500 text-xs mb-3 truncate">{user?.email}</p>
+          <p className="text-neutral-500 text-xs mb-1 truncate">{user?.email}</p>
+          <p className="text-neutral-600 text-xs mb-3 capitalize">{role}</p>
           <button
             onClick={handleSignOut}
             className="w-full text-left text-sm text-neutral-400 hover:text-red-400 transition-colors py-1"

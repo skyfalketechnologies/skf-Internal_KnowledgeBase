@@ -2,12 +2,14 @@ import { useEffect, useState } from 'react'
 import { doc, getDoc, updateDoc, serverTimestamp, collection, onSnapshot } from 'firebase/firestore'
 import { ref, uploadBytes, getDownloadURL } from 'firebase/storage'
 import { db, storage } from '../firebase'
-import { useNavigate, useParams } from 'react-router-dom'
+import { useNavigate, useParams, Link } from 'react-router-dom'
 import MDEditor from '@uiw/react-md-editor'
+import { useAuth } from '../context/AuthContext'
 
 export default function EditDocument() {
   const { id } = useParams()
   const navigate = useNavigate()
+  const { isAdmin } = useAuth()
   const [title, setTitle] = useState('')
   const [content, setContent] = useState('')
   const [category, setCategory] = useState('')
@@ -38,6 +40,13 @@ export default function EditDocument() {
     })
     return unsub
   }, [id])
+
+  if (!isAdmin) return (
+    <div className="flex items-center justify-center h-64 flex-col gap-3">
+      <p className="text-neutral-400 text-sm">You don't have permission to edit documents.</p>
+      <Link to="/documents" className="text-white text-sm font-medium hover:underline">← Back to documents</Link>
+    </div>
+  )
 
   const addTag = (e) => {
     if (e.key === 'Enter' || e.key === ',') {
@@ -118,7 +127,7 @@ export default function EditDocument() {
           </div>
           <div>
             <label className="block text-neutral-400 text-xs uppercase tracking-widest font-medium mb-1.5">Tags</label>
-            <div className="bg-neutral-900 border border-neutral-700 rounded px-3 py-2 flex flex-wrap gap-1.5 min-h-[42px] focus-within:border-white transition-colors">
+            <div className="bg-neutral-900 border border-neutral-700 rounded px-3 py-2 flex flex-wrap gap-1.5 min-h-10.5 focus-within:border-white transition-colors">
               {tags.map(tag => (
                 <span key={tag} className="flex items-center gap-1 bg-neutral-700 text-neutral-200 text-xs px-2 py-0.5 rounded">
                   #{tag}
