@@ -1,22 +1,25 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { collection, addDoc, onSnapshot, serverTimestamp } from 'firebase/firestore'
 import { ref, uploadBytes, getDownloadURL } from 'firebase/storage'
 import { db, storage } from '../firebase'
 import { useNavigate, Link } from 'react-router-dom'
-import MDEditor from '@uiw/react-md-editor'
+import Quill from 'quill'
+import 'quill/dist/quill.snow.css'
 import { useAuth } from '../context/AuthContext'
 
 export default function NewDocument() {
   const navigate = useNavigate()
   const { isAdmin } = useAuth()
   const [title, setTitle] = useState('')
-  const [content, setContent] = useState('## Title\n\nStart writing your document here...')
+  const [content, setContent] = useState('')
   const [category, setCategory] = useState('')
   const [tagInput, setTagInput] = useState('')
   const [tags, setTags] = useState([])
   const [categories, setCategories] = useState([])
   const [files, setFiles] = useState([])
   const [saving, setSaving] = useState(false)
+  const quillRef = useRef(null)
+  const quillInstance = useRef(null)
 
   useEffect(() => {
     const unsub = onSnapshot(collection(db, 'categories'), snap => {
@@ -25,7 +28,28 @@ export default function NewDocument() {
     return unsub
   }, [])
 
-  if (!isAdmin) return (
+  useEffect(() => {
+    if (quillRef.current && !quillInstance.current) {
+      quillInstance.current = new Quill(quillRef.current, {
+        theme: 'snow',
+        modules: {
+          toolbar: [
+            [{ header: [1, 2, 3, false] }],
+            ['bold', 'italic', 'underline', 'strike'],
+            [{ list: 'ordered' }, { list: 'bullet' }],
+            ['blockquote', 'code-block'],
+            ['link'],
+            ['clean'],
+          ],
+        },
+      })
+      quillInstance.current.on('text-change', () => {
+        setContent(quillInstance.current.root.innerHTML)
+      })
+    }
+  }, [])
+
+  if (isAdmin === false) return (
     <div className="flex items-center justify-center h-64 flex-col gap-3">
       <p className="text-neutral-400 text-sm">You don't have permission to create documents.</p>
       <Link to="/documents" className="text-white text-sm font-medium hover:underline">← Back to documents</Link>
@@ -45,7 +69,7 @@ export default function NewDocument() {
 
   const handleSave = async () => {
     if (!title.trim()) return alert('Title is required')
-    if (!content.trim()) return alert('Content is required')
+    if (!content.trim() || content === '<p><br></p>') return alert('Content is required')
     setSaving(true)
     try {
       const attachments = []
@@ -126,8 +150,8 @@ export default function NewDocument() {
 
         <div>
           <label className="block text-neutral-400 text-xs uppercase tracking-widest font-medium mb-1.5">Content *</label>
-          <div data-color-mode="dark">
-            <MDEditor value={content} onChange={setContent} height={400} style={{ background: '#171717', border: '1px solid #404040' }} />
+          <div className="rounded overflow-hidden border border-neutral-700">
+            <div ref={quillRef} style={{ minHeight: '300px' }} />
           </div>
         </div>
 

@@ -1,9 +1,10 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { doc, getDoc, updateDoc, serverTimestamp, collection, onSnapshot } from 'firebase/firestore'
 import { ref, uploadBytes, getDownloadURL } from 'firebase/storage'
 import { db, storage } from '../firebase'
 import { useNavigate, useParams, Link } from 'react-router-dom'
-import MDEditor from '@uiw/react-md-editor'
+import Quill from 'quill'
+import 'quill/dist/quill.snow.css'
 import { useAuth } from '../context/AuthContext'
 
 export default function EditDocument() {
@@ -20,6 +21,8 @@ export default function EditDocument() {
   const [newFiles, setNewFiles] = useState([])
   const [saving, setSaving] = useState(false)
   const [loading, setLoading] = useState(true)
+  const quillRef = useRef(null)
+  const quillInstance = useRef(null)
 
   useEffect(() => {
     const fetchDoc = async () => {
@@ -41,7 +44,31 @@ export default function EditDocument() {
     return unsub
   }, [id])
 
-  if (!isAdmin) return (
+  useEffect(() => {
+    if (!loading && quillRef.current && !quillInstance.current) {
+      quillInstance.current = new Quill(quillRef.current, {
+        theme: 'snow',
+        modules: {
+          toolbar: [
+            [{ header: [1, 2, 3, false] }],
+            ['bold', 'italic', 'underline', 'strike'],
+            [{ list: 'ordered' }, { list: 'bullet' }],
+            ['blockquote', 'code-block'],
+            ['link'],
+            ['clean'],
+          ],
+        },
+      })
+      if (content) {
+        quillInstance.current.root.innerHTML = content
+      }
+      quillInstance.current.on('text-change', () => {
+        setContent(quillInstance.current.root.innerHTML)
+      })
+    }
+  }, [content, loading])
+
+  if (isAdmin === false) return (
     <div className="flex items-center justify-center h-64 flex-col gap-3">
       <p className="text-neutral-400 text-sm">You don't have permission to edit documents.</p>
       <Link to="/documents" className="text-white text-sm font-medium hover:underline">← Back to documents</Link>
@@ -147,8 +174,8 @@ export default function EditDocument() {
 
         <div>
           <label className="block text-neutral-400 text-xs uppercase tracking-widest font-medium mb-1.5">Content *</label>
-          <div data-color-mode="dark">
-            <MDEditor value={content} onChange={setContent} height={400} style={{ background: '#171717', border: '1px solid #404040' }} />
+          <div className="rounded overflow-hidden border border-neutral-700">
+            <div ref={quillRef} style={{ minHeight: '300px' }} />
           </div>
         </div>
 

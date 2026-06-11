@@ -1,2 +1,55 @@
 @import "tailwindcss";
 
+.ql-toolbar {
+  background: #1a1a1a !important;
+  border-color: #404040 !important;
+}
+
+.ql-container {
+  background: #1a1a1a !important;
+  border-color: #404040 !important;
+  color: #e8e8e8 !important;
+  min-height: 300px;
+}
+
+.ql-editor {
+  color: #e8e8e8 !important;
+  min-height: 300px;
+}
+
+.ql-editor.ql-blank::before {
+  color: #555 !important;
+}
+
+.ql-stroke {
+  stroke: #aaa !important;
+}
+
+.ql-fill {
+  fill: #aaa !important;
+}
+
+.ql-picker {
+  color: #aaa !important;
+}
+
+.ql-picker-options {
+  background: #1a1a1a !important;
+  border-color: #404040 !important;
+}
+
+.ql-picker-item {
+  color: #aaa !important;
+}
+
+.ql-picker-item:hover {
+  color: #fff !important;
+}
+
+.ql-toolbar button:hover .ql-stroke {
+  stroke: #fff !important;
+}
+
+.ql-toolbar button:hover .ql-fill {
+  fill: #fff !important;
+}

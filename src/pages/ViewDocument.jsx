@@ -2,7 +2,7 @@ import { useEffect, useState } from 'react'
 import { doc, getDoc, deleteDoc } from 'firebase/firestore'
 import { db } from '../firebase'
 import { useNavigate, useParams, Link } from 'react-router-dom'
-import MarkdownRenderer from '../components/MarkdownRenderer'
+
 import { useAuth } from '../context/AuthContext'
 
 export default function ViewDocument() {
@@ -72,7 +72,10 @@ export default function ViewDocument() {
       </div>
 
       <div className="border-t border-neutral-800 pt-6 mb-6">
-        <MarkdownRenderer content={document.content || ''} />
+        <div
+          className="prose prose-neutral max-w-none text-neutral-300"
+          dangerouslySetInnerHTML={{ __html: document.content || '' }}
+        />
       </div>
 
       {document.attachments?.length > 0 && (
