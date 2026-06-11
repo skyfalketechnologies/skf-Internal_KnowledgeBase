@@ -9,7 +9,7 @@ import { useAuth } from '../context/AuthContext'
 
 export default function NewDocument() {
   const navigate = useNavigate()
-  const { isAdmin } = useAuth()
+  const { user, isAdmin, isAttachee } = useAuth()
   const [title, setTitle] = useState('')
   const [content, setContent] = useState('')
   const [category, setCategory] = useState('')
@@ -49,10 +49,10 @@ export default function NewDocument() {
     }
   }, [])
 
-  if (isAdmin === false) return (
+  if (!isAdmin && !isAttachee) return (
     <div className="flex items-center justify-center h-64 flex-col gap-3">
       <p className="text-neutral-400 text-sm">You don't have permission to create documents.</p>
-      <Link to="/documents" className="text-white text-sm font-medium hover:underline">← Back to documents</Link>
+      <Link to="/documents" className="text-white text-sm font-medium hover:underline">← Back</Link>
     </div>
   )
 
@@ -67,7 +67,7 @@ export default function NewDocument() {
 
   const removeTag = (tag) => setTags(tags.filter(t => t !== tag))
 
-  const handleSave = async () => {
+  const handleSave = async (submitForReview = false) => {
     if (!title.trim()) return alert('Title is required')
     if (!content.trim() || content === '<p><br></p>') return alert('Content is required')
     setSaving(true)
@@ -79,16 +79,28 @@ export default function NewDocument() {
         const url = await getDownloadURL(fileRef)
         attachments.push({ name: file.name, url, size: file.size, type: file.type })
       }
-      await addDoc(collection(db, 'documents'), {
+
+      const docData = {
         title: title.trim(),
         content,
         category: category || 'General',
         tags,
         attachments,
+        createdBy: user.uid,
         createdAt: serverTimestamp(),
         updatedAt: serverTimestamp(),
-      })
-      navigate('/documents')
+      }
+
+      if (isAdmin) {
+        docData.type = 'sop'
+        docData.status = 'published'
+      } else {
+        docData.type = 'submission'
+        docData.status = submitForReview ? 'review' : 'draft'
+      }
+
+      await addDoc(collection(db, 'documents'), docData)
+      navigate(isAdmin ? '/documents' : '/my-submissions')
     } catch (err) {
       console.error(err)
       alert('Error saving document')
@@ -103,13 +115,18 @@ export default function NewDocument() {
     <div className="max-w-4xl mx-auto">
       <div className="flex items-center justify-between mb-6">
         <div>
-          <h1 className="text-white text-2xl font-bold">New Document</h1>
-          <p className="text-neutral-500 text-sm mt-1">Create a new knowledge base entry</p>
+          <h1 className="text-white text-2xl font-bold">{isAdmin ? 'New SOP' : 'New Submission'}</h1>
+          <p className="text-neutral-500 text-sm mt-1">{isAdmin ? 'Publish a new SOP or instruction' : 'Document your work and submit for review'}</p>
         </div>
         <div className="flex gap-3">
-          <button onClick={() => navigate('/documents')} className="text-sm text-neutral-400 hover:text-white transition-colors px-4 py-2">Cancel</button>
-          <button onClick={handleSave} disabled={saving} className="bg-white text-black text-sm font-semibold px-5 py-2 rounded hover:bg-neutral-200 transition-colors disabled:opacity-50">
-            {saving ? 'Saving...' : 'Save Document'}
+          <button onClick={() => navigate(-1)} className="text-sm text-neutral-400 hover:text-white transition-colors px-4 py-2">Cancel</button>
+          {isAttachee && (
+            <button onClick={() => handleSave(false)} disabled={saving} className="bg-neutral-800 text-white text-sm font-semibold px-4 py-2 rounded hover:bg-neutral-700 transition-colors disabled:opacity-50">
+              Save Draft
+            </button>
+          )}
+          <button onClick={() => handleSave(true)} disabled={saving} className="bg-white text-black text-sm font-semibold px-5 py-2 rounded hover:bg-neutral-200 transition-colors disabled:opacity-50">
+            {saving ? 'Saving...' : isAdmin ? 'Publish SOP' : 'Submit for Review'}
           </button>
         </div>
       </div>

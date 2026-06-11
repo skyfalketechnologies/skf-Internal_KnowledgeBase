@@ -10,6 +10,8 @@ import EditDocument from './pages/EditDocument'
 import ViewDocument from './pages/ViewDocument'
 import Search from './pages/Search'
 import Categories from './pages/Categories'
+import ReviewQueue from './pages/ReviewQueue'
+import MySubmissions from './pages/MySubmissions'
 
 function ProtectedLayout({ children }) {
   return (
@@ -32,6 +34,8 @@ export default function App() {
           <Route path="/edit/:id" element={<ProtectedLayout><EditDocument /></ProtectedLayout>} />
           <Route path="/search" element={<ProtectedLayout><Search /></ProtectedLayout>} />
           <Route path="/categories" element={<ProtectedLayout><Categories /></ProtectedLayout>} />
+          <Route path="/review-queue" element={<ProtectedLayout><ReviewQueue /></ProtectedLayout>} />
+          <Route path="/my-submissions" element={<ProtectedLayout><MySubmissions /></ProtectedLayout>} />
         </Routes>
       </AuthProvider>
     </BrowserRouter>
